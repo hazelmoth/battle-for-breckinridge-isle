@@ -12,7 +12,7 @@ public class TurnHandler : MonoBehaviour
     void Start()
     {
 		instance = this;
-		currentTurn = 0;
+		currentTurn = 1;
 		currentPlayerIndex = 0;
     }
 
@@ -24,7 +24,6 @@ public class TurnHandler : MonoBehaviour
 	{
 		GameController.instance.ResetAllExpendedArmies();
 		GameController.instance.EvaluateRemainingPlayers();
-		GameController.instance.CollectArmies(GetCurrentPlayer());
 
 		if (GameController.instance.gameEnded)
 			return;
@@ -33,6 +32,9 @@ public class TurnHandler : MonoBehaviour
 		if (instance.currentPlayerIndex >= GameController.instance.players.Count)
 			instance.currentPlayerIndex = 0;
 		instance.currentTurn++;
+
+		if (instance.currentTurn > 2)
+			GameController.instance.CollectArmies(GetCurrentPlayer());
 
 		if (GetCurrentPlayer().armiesToPlace > 0)
 		{
