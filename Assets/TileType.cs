@@ -11,4 +11,5 @@ public class TileType : ScriptableObject
     [SerializeField] public TileBase tilePrefab;
     [SerializeField] public float armyProduction;
 	[SerializeField] public float attackBonus;
+	[SerializeField] public float defenseBonus;
 }

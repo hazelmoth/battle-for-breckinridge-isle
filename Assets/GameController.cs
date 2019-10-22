@@ -114,7 +114,7 @@ public class GameController : MonoBehaviour
 			return;
 		}
 
-		if (UnityEngine.Random.value < 0.45 * (1 + startTile.type.attackBonus))
+		if (UnityEngine.Random.value < 0.45 * (1 + (startTile.type.attackBonus - endTile.type.defenseBonus)))
 		{
 			endTile.armies--;
 		}

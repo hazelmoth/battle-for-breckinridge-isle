@@ -16,3 +16,5 @@ MonoBehaviour:
   sprite: {fileID: 8509550459451208454, guid: 4934a2fa3df584b98b5787a340255b99, type: 3}
   tilePrefab: {fileID: 11400000, guid: e5a22a660e4ab4854adc5fce31575749, type: 2}
   armyProduction: 0
+  attackBonus: 0
+  defenseBonus: -0.6
