@@ -15,4 +15,6 @@ MonoBehaviour:
   id: farm
   sprite: {fileID: 21300000, guid: fbe52e3adde8542ea852e62f4ba43616, type: 3}
   tilePrefab: {fileID: 11400000, guid: 0897853ae0bae48fc9a9bbb451b219b7, type: 2}
-  armyProduction: 2
+  armyProduction: 1
+  attackBonus: 0
+  defenseBonus: 0
