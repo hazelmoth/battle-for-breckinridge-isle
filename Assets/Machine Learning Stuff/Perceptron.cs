@@ -6,14 +6,21 @@ public class Perceptron
 {
 	public Perceptron (float[] weights)
 	{
-		this.weights = weights;
+		this.Weights = weights;
 	}
 
-	float[] weights;
+	public float[] Weights { get; set; }
 
 	public float Activate (float[] input)
 	{
-		return (float)System.Math.Tanh(WeightedSum(input, weights));
+		return (float)System.Math.Tanh(WeightedSum(input, Weights));
+	}
+	public void RandomizeWeights ()
+	{
+		for (int i = 0; i < Weights.Length; i++)
+		{
+			Weights[i] = Random.Range(-1f, 1f);
+		}
 	}
 
 	float WeightedSum (float[] inputs, float[] weights)

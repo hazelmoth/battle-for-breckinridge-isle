@@ -14,6 +14,9 @@ public class TurnHandler : MonoBehaviour
 		instance = this;
 		currentTurn = 1;
 		currentPlayerIndex = 0;
+
+		NeuralNetwork nn = new NeuralNetwork(2, 2, new int[] { 2, 2 });
+		Debug.Log(nn.Calculate(new float[] { 1f, 2f })[0]);
     }
 
 	public static Player GetCurrentPlayer ()
