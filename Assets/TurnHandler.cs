@@ -19,10 +19,13 @@ public class TurnHandler : MonoBehaviour
 		Debug.Log(nn.Calculate(new float[] { 1f, 2f })[0]);
     }
 
+	public static int CurrentTurn => instance.currentTurn;
+
 	public static Player GetCurrentPlayer ()
 	{
 		return GameController.instance.players[instance.currentPlayerIndex];
 	}
+	
 	public static void ProgressTurn()
 	{
 		GameController.instance.ResetAllExpendedArmies();

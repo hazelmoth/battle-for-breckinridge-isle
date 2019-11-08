@@ -9,11 +9,12 @@ public class GameController : MonoBehaviour
 
     public const int WORLD_X = 14;
     public const int WORLD_Y = 8;
-
 	public const int BASE_ARMIES_PER_TURN = 1;
 
-    public Dictionary<Vector2Int, GameTile> gameMap;
+	public delegate void GameControllerEvent();
+	public event GameControllerEvent OnSetupComplete;
 
+    public Dictionary<Vector2Int, GameTile> gameMap;
 	public List<Player> players;
 
 	public bool gameEnded;
@@ -54,6 +55,8 @@ public class GameController : MonoBehaviour
 		UpdateWorldRender();
 
 		HUDManager.SetPlayerIndicator(TurnHandler.GetCurrentPlayer());
+
+		OnSetupComplete?.Invoke();
     }
 
 

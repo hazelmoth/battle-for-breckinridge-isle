@@ -35,85 +35,99 @@ public class InputHandler : MonoBehaviour
 		if (Input.GetMouseButtonDown(0))
 		{
 			Vector3Int tilePos = GetTilePosUnderMouse();
-			if (!firstTileSelected)
-			{
-				if (GameController.instance.GetTile(new Vector2Int(tilePos.x, tilePos.y)) == null)
-					return;
-				// Verify that this is the current player's tile
-				if (GameController.instance.GetTile(new Vector2Int(tilePos.x, tilePos.y)).owner != TurnHandler.GetCurrentPlayer())
-					return;
-
-				FirstSelectedTile = tilePos;
-				firstTileSelected = true;
-				if (!placingArmies)
-					SelectionDisplayer.PlaceSelectionRing(new Vector2Int(FirstSelectedTile.x, FirstSelectedTile.y));
-
-				if (placingArmies)
-				{
-					if (TurnHandler.GetCurrentPlayer().armiesToPlace <= 0)
-						placingArmies = false;
-					else
-					{
-						GameController.instance.PlaceArmyIfAvailable(TurnHandler.GetCurrentPlayer(), new Vector2Int(tilePos.x, tilePos.y));
-						firstTileSelected = false;
-						secondTileSelected = false;
-
-						if (TurnHandler.GetCurrentPlayer().armiesToPlace <= 0)
-						{
-							placingArmies = false;
-							HUDManager.HidePlaceArmyText();
-						}
-						else
-						{
-							HUDManager.ShowPlaceArmyText(TurnHandler.GetCurrentPlayer().armiesToPlace);
-						}
-						return;
-					}
-				}
-			}
-			else
-			{
-				SecondSelectedTile = tilePos;
-				secondTileSelected = true;
-			}
-			
-			if (firstTileSelected && secondTileSelected)
-			{
-				Debug.Log("MOVE inputted");
-				if (Mathf.Abs(FirstSelectedTile.x - SecondSelectedTile.x) == 1
-					&& Mathf.Abs(FirstSelectedTile.y - SecondSelectedTile.y) == 0
-					|| Mathf.Abs(FirstSelectedTile.x - SecondSelectedTile.x) == 0
-					&& Mathf.Abs(FirstSelectedTile.y - SecondSelectedTile.y) == 1)
-				{
-					if (GameController.instance.GetTile(new Vector2Int(FirstSelectedTile.x, FirstSelectedTile.y)).owner == TurnHandler.GetCurrentPlayer())
-					{
-						if (GameController.instance.GetTile(new Vector2Int(SecondSelectedTile.x, SecondSelectedTile.y)).owner == TurnHandler.GetCurrentPlayer())
-						{
-							// Both tiles are the current player's
-							// Perform troop movement
-							GameController.instance.MoveArmies(new Vector2Int(FirstSelectedTile.x, FirstSelectedTile.y), new Vector2Int(SecondSelectedTile.x, SecondSelectedTile.y));
-							
-						}
-						else if (GameController.instance.GetTile(new Vector2Int(SecondSelectedTile.x, SecondSelectedTile.y)).armies == 0)
-						{
-							// Move into empty territory
-							GameController.instance.MoveArmies(new Vector2Int(FirstSelectedTile.x, FirstSelectedTile.y), new Vector2Int(SecondSelectedTile.x, SecondSelectedTile.y));
-							
-						}
-						else
-						{
-							// Player attacking enemy
-							GameController.instance.LaunchAttack(new Vector2Int(FirstSelectedTile.x, FirstSelectedTile.y), new Vector2Int(SecondSelectedTile.x, SecondSelectedTile.y));
-						}
-					}
-					
-				}
-				firstTileSelected = false;
-				secondTileSelected = false;
-				SelectionDisplayer.ClearSelectionRing();
-			}
+			RegisterClickOnTile(new Vector2Int(tilePos.x, tilePos.y));
 		}
 	}
+
+	public void RegisterClickOnTile (Vector2Int tilePos)
+	{
+		GameTile tile = GameController.instance.GetTile(tilePos);
+
+		if (tile == null)
+			return;
+		// Verify that this is the current player's tile
+		if (!firstTileSelected && tile.owner != TurnHandler.GetCurrentPlayer())
+			return;
+
+		if (!firstTileSelected)
+		{
+			if (tile == null)
+				return;
+			// Verify that this is the current player's tile
+			if (tile.owner != TurnHandler.GetCurrentPlayer())
+				return;
+
+			FirstSelectedTile = new Vector3Int(tilePos.x, tilePos.y, 0);
+			firstTileSelected = true;
+			if (!placingArmies)
+				SelectionDisplayer.PlaceSelectionRing(new Vector2Int(FirstSelectedTile.x, FirstSelectedTile.y));
+
+			if (placingArmies)
+			{
+				if (TurnHandler.GetCurrentPlayer().armiesToPlace <= 0)
+					placingArmies = false;
+				else
+				{
+					GameController.instance.PlaceArmyIfAvailable(TurnHandler.GetCurrentPlayer(), new Vector2Int(tilePos.x, tilePos.y));
+					firstTileSelected = false;
+					secondTileSelected = false;
+
+					if (TurnHandler.GetCurrentPlayer().armiesToPlace <= 0)
+					{
+						placingArmies = false;
+						HUDManager.HidePlaceArmyText();
+					}
+					else
+					{
+						HUDManager.ShowPlaceArmyText(TurnHandler.GetCurrentPlayer().armiesToPlace);
+					}
+					return;
+				}
+			}
+		}
+		else
+		{
+			SecondSelectedTile = new Vector3Int(tilePos.x, tilePos.y, 0);
+			secondTileSelected = true;
+		}
+
+		if (firstTileSelected && secondTileSelected)
+		{
+			Debug.Log("MOVE inputted");
+			if (Mathf.Abs(FirstSelectedTile.x - SecondSelectedTile.x) == 1
+				&& Mathf.Abs(FirstSelectedTile.y - SecondSelectedTile.y) == 0
+				|| Mathf.Abs(FirstSelectedTile.x - SecondSelectedTile.x) == 0
+				&& Mathf.Abs(FirstSelectedTile.y - SecondSelectedTile.y) == 1)
+			{
+				if (GameController.instance.GetTile(new Vector2Int(FirstSelectedTile.x, FirstSelectedTile.y)).owner == TurnHandler.GetCurrentPlayer())
+				{
+					if (GameController.instance.GetTile(new Vector2Int(SecondSelectedTile.x, SecondSelectedTile.y)).owner == TurnHandler.GetCurrentPlayer())
+					{
+						// Both tiles are the current player's
+						// Perform troop movement
+						GameController.instance.MoveArmies(new Vector2Int(FirstSelectedTile.x, FirstSelectedTile.y), new Vector2Int(SecondSelectedTile.x, SecondSelectedTile.y));
+
+					}
+					else if (GameController.instance.GetTile(new Vector2Int(SecondSelectedTile.x, SecondSelectedTile.y)).armies == 0)
+					{
+						// Move into empty territory
+						GameController.instance.MoveArmies(new Vector2Int(FirstSelectedTile.x, FirstSelectedTile.y), new Vector2Int(SecondSelectedTile.x, SecondSelectedTile.y));
+
+					}
+					else
+					{
+						// Player attacking enemy
+						GameController.instance.LaunchAttack(new Vector2Int(FirstSelectedTile.x, FirstSelectedTile.y), new Vector2Int(SecondSelectedTile.x, SecondSelectedTile.y));
+					}
+				}
+
+			}
+			firstTileSelected = false;
+			secondTileSelected = false;
+			SelectionDisplayer.ClearSelectionRing();
+		}
+	}
+
 	public void OnEndTurnButton ()
 	{
 		firstTileSelected = false;
