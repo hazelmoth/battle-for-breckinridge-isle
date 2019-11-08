@@ -68,6 +68,10 @@ public class NeuralNetwork
 			}
 		}
 	}
+	public int GetInputCount(int layer, int perceptron)
+	{
+		return layers[layer].Perceptrons[perceptron].Weights.Length;
+	}
 
 	class PerceptronLayer
 	{

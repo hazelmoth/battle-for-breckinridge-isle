@@ -30,6 +30,8 @@ public static class NNTrainer
 {
 	const int HIDDEN_LAYER_COUNT = 3;
 	const int MAIN_SCENE_INDEX = 1;
+	const float WEIGHT_INIT_MIN = -1f;
+	const float WEIGHT_INIT_MAX = 1f;
 
 	public static void StartTraining (int numGenerations, int modelsPerGen)
 	{
@@ -65,6 +67,9 @@ public static class NNTrainer
 
 		float[][][][] genWeights = new float[modelsPerGen][][][];
 
+		// One bool for each model in this generation, to track whether it won
+		bool[] wins = new bool[modelsPerGen];
+
 		// Randomize weights
 		for (int m = 0; m < modelsPerGen; m++)
 		{
@@ -74,13 +79,18 @@ public static class NNTrainer
 				genWeights[m][l] = new float[nodeCountPerLayer][];
 				for (int p = 0; p < nodeCountPerLayer; p++)
 				{
-					genWeights[m][l][p] = new float[nn.]
-					for (int w = 0; w < )
+					int weightCount = nn.GetInputCount(l, p);
+					genWeights[m][l][p] = new float[weightCount];
+					for (int w = 0; w < weightCount; w++)
+					{
+						genWeights[m][l][p][w] = Random.Range(WEIGHT_INIT_MIN, WEIGHT_INIT_MAX);
+					}
 				}
 			}
 		}
 
 		// TRAINING PROCESS
+		// We'll be testing two models at a time, pitted against each other.
 		for (int gen = 0; gen < numGenerations; gen++)
 		{
 			for (int model = 0; model < modelsPerGen; model += 2)
@@ -101,27 +111,28 @@ public static class NNTrainer
 				// Play through a game for every two models
 				while (GameController.instance.gameEnded == false)
 				{
-					// TODO set weights for both models
-					if (TurnHandler.CurrentTurn % 2 == 1) // Turn is odd
+					// Set weights depending on whose turn it is
+					if (TurnHandler.CurrentTurn % 2 == 1) // Turn is odd (turns start on 1)
 					{
-						// > Set NN to have weights for odd model
+						// Set NN to have weights for first model
 						nn.SetWeights(genWeights[model]);
 					}
 					else // Turn is even
 					{
-						// > Set NN to have weights for even model
+						// Set NN to have weights for second model
+						nn.SetWeights(genWeights[model + 1]);
 					}
 
 					float[] output = nn.Calculate(GatherInputs());
 					while (output[0] < output[1]) // Repeat until turn end
 					{
-						// > Input move
+						// TODO Input move
+
 
 						output = nn.Calculate(GatherInputs());
 					}
 				}
 			}
-			
 		}
 	}
 
