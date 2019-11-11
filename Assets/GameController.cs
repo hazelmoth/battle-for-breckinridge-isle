@@ -7,8 +7,8 @@ public class GameController : MonoBehaviour
 {
 	public static GameController instance;
 
-    public const int WORLD_X = 14;
-    public const int WORLD_Y = 8;
+    public const int WORLD_X = 7;
+    public const int WORLD_Y = 4;
 	public const int BASE_ARMIES_PER_TURN = 1;
 
 	public delegate void GameControllerEvent();
@@ -17,6 +17,7 @@ public class GameController : MonoBehaviour
     public Dictionary<Vector2Int, GameTile> gameMap;
 	public List<Player> players;
 
+	public bool setupHasFinished = false;
 	public bool gameEnded;
 
     // Start is called before the first frame update
@@ -57,7 +58,9 @@ public class GameController : MonoBehaviour
 		HUDManager.SetPlayerIndicator(TurnHandler.GetCurrentPlayer());
 
 		OnSetupComplete?.Invoke();
-    }
+		setupHasFinished = true;
+		Debug.Log(OnSetupComplete != null);
+	}
 
 
 	private void UpdateWorldRender ()
@@ -199,6 +202,26 @@ public class GameController : MonoBehaviour
 	{
 		tile.owner = newOwner;
 		UpdateWorldRender();
+	}
+	public List<Vector2Int> GetAdjacentTiles (Vector2Int tilePos)
+	{
+		List<Vector2Int> results = new List<Vector2Int>();
+		for (int x = -1; x <= 1; x++)
+		{
+			for (int y = -1; y <=1; y++)
+			{
+				if (Mathf.Abs(x) == Mathf.Abs(y))
+				{
+					continue;
+				}
+
+				if (gameMap.ContainsKey(new Vector2Int(tilePos.x + x, tilePos.y + y)))
+				{
+					results.Add(new Vector2Int(tilePos.x + x, tilePos.y + y));
+				}
+			}
+		}
+		return results;
 	}
 	void SetOwnerNullIfNoArmies (GameTile tile)
 	{

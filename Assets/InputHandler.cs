@@ -37,6 +37,11 @@ public class InputHandler : MonoBehaviour
 			Vector3Int tilePos = GetTilePosUnderMouse();
 			RegisterClickOnTile(new Vector2Int(tilePos.x, tilePos.y));
 		}
+
+		if (Input.GetKeyDown(KeyCode.T))
+		{
+			NNTrainer.StartTraining(2, 2);
+		}
 	}
 
 	public void RegisterClickOnTile (Vector2Int tilePos)

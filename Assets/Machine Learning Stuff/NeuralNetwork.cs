@@ -62,7 +62,7 @@ public class NeuralNetwork
 	{
 		for (int l = 0; l < layers.Count; l++)
 		{
-			for (int p = 0; p < layers[l].Perceptrons.Count; l++)
+			for (int p = 0; p < layers[l].Perceptrons.Count; p++)
 			{
 				layers[l].Perceptrons[p].Weights = weights[l][p];
 			}
