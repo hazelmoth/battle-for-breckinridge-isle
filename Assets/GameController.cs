@@ -26,7 +26,19 @@ public class GameController : MonoBehaviour
     {
 		instance = this;
 		gameMap = new Dictionary<Vector2Int, GameTile>();
-		WorldMapGenerator.StartGeneration(WORLD_X, WORLD_Y, UnityEngine.Random.value * 1000, OnGenFinished, this);
+
+		// Make up some players to spawn
+		Player player1 = new Player();
+		player1.nationName = "The Union";
+		player1.color = Color.blue;
+
+		Player player2 = new Player();
+		player2.color = Color.red;
+		player2.nationName = "The Confederacy";
+
+		startingPlayers = new List<Player> { player1, player2 };
+
+		WorldMapGenerator.StartGeneration(WORLD_X, WORLD_Y, UnityEngine.Random.value * 1000, this.startingPlayers.Count, OnGenFinished, this);
     }
 
     private void OnGenFinished(WorldMap world)
@@ -42,17 +54,8 @@ public class GameController : MonoBehaviour
             WorldRenderer.RenderWorld(gameMap);
         }
 
-		// Make up some players to spawn
-		Player player1 = new Player();
-		player1.nationName = "The Union";
-		player1.color = Color.blue;
 
-		Player player2 = new Player();
-		player2.color = Color.red;
-		player2.nationName = "The Confederacy";
-
-		startingPlayers = new List<Player> { player1, player2 };
-		remainingPlayers = startingPlayers;
+		remainingPlayers = new List<Player>(startingPlayers);
 		PlayerSpawner.SpawnPlayers(remainingPlayers, 4);
 
 		UpdateWorldRender();
@@ -61,7 +64,6 @@ public class GameController : MonoBehaviour
 
 		OnSetupComplete?.Invoke();
 		setupHasFinished = true;
-		Debug.Log(OnSetupComplete != null);
 	}
 
 

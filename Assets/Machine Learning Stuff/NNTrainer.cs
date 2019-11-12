@@ -33,6 +33,9 @@ public static class NNTrainer
 	const int MAIN_SCENE_INDEX = 1;
 	const float WEIGHT_INIT_MIN = -1f;
 	const float WEIGHT_INIT_MAX = 1f;
+	const float MUTATION_CHANCE = 0.04f;
+
+	public static bool DoShowMoves = false;
 
 	public static void StartTraining (int numGenerations, int modelsPerGen)
 	{
@@ -136,7 +139,6 @@ public static class NNTrainer
 				// Play through a game for every two models
 				while (GameController.instance.gameEnded == false)
 				{
-					Debug.Log(TurnHandler.CurrentTurn);
 					if (TurnHandler.CurrentTurn > MAX_TURN_COUNT)
 					{
 						Debug.Log("Turn limit reached.");
@@ -163,7 +165,6 @@ public static class NNTrainer
 
 					while (true) // Repeat until turn end
 					{
-
 						// Find best starting tile
 						int bestStart = 0;
 
@@ -218,7 +219,6 @@ public static class NNTrainer
 						if (output[0] > output[bestStart + 1])
 						{
 							// Agent decided end turn is best move
-							InputHandler.instance.OnEndTurnButton();
 							break;
 						}
 						else
@@ -232,12 +232,15 @@ public static class NNTrainer
 							InputHandler.instance.ClearTileSelection();
 
 							InputHandler.instance.RegisterClickOnTile(new Vector2Int(startX, startY));
-							yield return null;
+
+							if (DoShowMoves)
+								yield return null;
 
 							if (!InputHandler.instance.placingArmies) // Only input the second move if we're not placing armies
 							{
 								InputHandler.instance.RegisterClickOnTile(new Vector2Int(targetX, targetY));
-								yield return null;
+								if (DoShowMoves)
+									yield return null;
 							}
 						}
 
@@ -253,6 +256,7 @@ public static class NNTrainer
 						}
 						output = nn.Calculate(input);
 					}
+					InputHandler.instance.OnEndTurnButton();
 				}
 				// The game is over.
 				// Evaluate which player won:
@@ -273,6 +277,44 @@ public static class NNTrainer
 					Debug.Log("A perfect draw.");
 					wins[model] = false;
 					wins[model + 1] = false;
+				}
+
+				
+			}
+			// All the models in this generation have been tested. Time to breed.
+			Debug.Log("Breeding winners of generation " + gen);
+			List<float[][][]> breedingPool = new List<float[][][]>();
+			for (int m = 0; m < modelsPerGen; m++)
+			{
+				if (wins[m] == true)
+				{
+					breedingPool.Add(genWeights[m]);
+				}
+			}
+			if (breedingPool.Count == 0)
+			{
+				breedingPool.Add(genWeights[0]);
+				Debug.LogError("No models in gen " + gen + " survived to breed!");
+			}
+			for (int m = 0; m < modelsPerGen; m++)
+			{
+				for (int l = 0; l < HIDDEN_LAYER_COUNT; l++)
+				{
+					for (int p = 0; p < nodeCountPerLayer; p++)
+					{
+						for (int w = 0; w < genWeights[m][l][p].Length; w++)
+						{
+							if (Random.value < MUTATION_CHANCE)
+							{
+								genWeights[m][l][p][w] = Random.Range(WEIGHT_INIT_MIN, WEIGHT_INIT_MAX);
+							}
+							else
+							{
+								int i = Random.Range(0, breedingPool.Count);
+								genWeights[m][l][p][w] = breedingPool[i][l][p][w];
+							}
+						}
+					}
 				}
 			}
 		}

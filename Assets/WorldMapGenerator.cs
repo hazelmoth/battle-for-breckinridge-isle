@@ -28,68 +28,83 @@ static class WorldMapGenerator
 
 	const float waterLevel = 0.1f;
 
-	public static void StartGeneration (int sizeX, int sizeY, float seed, WorldFinishedEvent callback, MonoBehaviour genObject)
+	public static void StartGeneration (int sizeX, int sizeY, float seed, int minSpawnPoints, WorldFinishedEvent callback, MonoBehaviour genObject)
 	{
 		//float seed = Random.value * 1000;
 		void OnFinished(WorldMap world)
         {
             callback(world);
         }
-        genObject.StartCoroutine(GenerateCoroutine(sizeX, sizeY, seed, OnFinished));
+        genObject.StartCoroutine(GenerateCoroutine(sizeX, sizeY, seed, minSpawnPoints, OnFinished));
     }
 
-    static IEnumerator GenerateCoroutine (int sizeX, int sizeY, float seed, WorldFinishedEvent callback)
+    static IEnumerator GenerateCoroutine (int sizeX, int sizeY, float seed, int minSpawnPoints, WorldFinishedEvent callback)
     {
-        WorldMap world = new WorldMap
-        {
-            mapDict = new Dictionary<Vector2Int, TileType>()
-        };
+		WorldMap world;
 
-        int tilesPerFrame = 100;
-        int tilesDoneSinceFrame = 0;
+		// Repeat until we generate a valid world
+		while (true) 
+		{
+			world = new WorldMap
+			{
+				mapDict = new Dictionary<Vector2Int, TileType>()
+			};
 
-        Dictionary<Vector2Int, float> heightmap = GenerateHeightMap(sizeX, sizeY, seed);
+			int tilesPerFrame = 100;
+			int tilesDoneSinceFrame = 0;
 
-		// Loop through every tile defined by the size, fill it with grass and maybe add a plant
-		for (int y = 0; y < sizeY; y++) {
-			for (int x = 0; x < sizeX; x++) {
-				Vector2Int currentPosition = new Vector2Int (x, y);
+			Dictionary<Vector2Int, float> heightmap = GenerateHeightMap(sizeX, sizeY, seed);
 
-                TileType newTileType;
+			// Loop through every tile defined by the size, fill it with grass and maybe add a plant
+			for (int y = 0; y < sizeY; y++) {
+				for (int x = 0; x < sizeX; x++) {
+					Vector2Int currentPosition = new Vector2Int(x, y);
 
-                // Assign ground material based on height
-                if (heightmap[currentPosition] > waterLevel)
-                {
-					if (UnityEngine.Random.value < forestProbability)
+					TileType newTileType;
+
+					// Assign ground material based on height
+					if (heightmap[currentPosition] > waterLevel)
 					{
-						newTileType = TileTypeLibrary.GetTileType(ForestTileId);
+						if (UnityEngine.Random.value < forestProbability)
+						{
+							newTileType = TileTypeLibrary.GetTileType(ForestTileId);
+						}
+						else if (UnityEngine.Random.value < farmProbability)
+						{
+							newTileType = TileTypeLibrary.GetTileType(FarmTileId);
+						}
+						else
+						{
+							newTileType = TileTypeLibrary.GetTileType(PlainsTileId);
+						}
 					}
-					else if (UnityEngine.Random.value < farmProbability)
+					else
 					{
-						newTileType = TileTypeLibrary.GetTileType(FarmTileId);
+						newTileType = TileTypeLibrary.GetTileType(WaterTileId);
 					}
-					else 
+
+					world.mapDict.Add(currentPosition, newTileType);
+
+
+					tilesDoneSinceFrame++;
+					if (tilesDoneSinceFrame >= tilesPerFrame)
 					{
-						newTileType = TileTypeLibrary.GetTileType(PlainsTileId);
+						tilesDoneSinceFrame = 0;
+						yield return null;
 					}
-                }
-                else
-                {
-                    newTileType = TileTypeLibrary.GetTileType(WaterTileId);
-                }
+				}
+			}
+			if (!WorldIsValid(world, minSpawnPoints))
+			{
+				yield return new WaitForSeconds(0.1f);
+				seed = Random.value * 1000;
+				continue;
+			}
 
-                world.mapDict.Add (currentPosition, newTileType);
-
-
-                tilesDoneSinceFrame++;
-                if (tilesDoneSinceFrame >= tilesPerFrame)
-                {
-                    tilesDoneSinceFrame = 0;
-                    yield return null;
-                }
-            }
+			break;
 		}
-        callback(world);
+
+		callback(world);
 	}
 
     static Dictionary<Vector2Int, float> GenerateHeightMap (int sizeX, int sizeY, float seed)
@@ -142,7 +157,18 @@ static class WorldMapGenerator
 		z = 1 - z;
 		return z;
 	}
-		
+	static bool WorldIsValid (WorldMap world, int minSpawnPoints)
+	{
+		int plainsFound = 0;
+		foreach (TileType tile in world.mapDict.Values)
+		{
+			if (tile.id == PlainsTileId)
+			{
+				plainsFound++;
+			}
+		}
+		return (plainsFound >= minSpawnPoints);
+	}
 	// For randomly selecting plants
 	struct WeightedString {
 		public string value;
