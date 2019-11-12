@@ -98,7 +98,6 @@ public class InputHandler : MonoBehaviour
 
 		if (firstTileSelected && secondTileSelected)
 		{
-			Debug.Log("MOVE inputted");
 			if (Mathf.Abs(FirstSelectedTile.x - SecondSelectedTile.x) == 1
 				&& Mathf.Abs(FirstSelectedTile.y - SecondSelectedTile.y) == 0
 				|| Mathf.Abs(FirstSelectedTile.x - SecondSelectedTile.x) == 0
@@ -138,8 +137,15 @@ public class InputHandler : MonoBehaviour
 		firstTileSelected = false;
 		secondTileSelected = false;
 		placingArmies = false;
+		SelectionDisplayer.ClearSelectionRing();
 		HUDManager.HidePlaceArmyText();
 		TurnHandler.ProgressTurn();
+	}
+	public void ClearTileSelection ()
+	{
+		firstTileSelected = false;
+		secondTileSelected = false;
+		SelectionDisplayer.ClearSelectionRing();
 	}
 	Vector3Int GetTilePosUnderMouse ()
 	{

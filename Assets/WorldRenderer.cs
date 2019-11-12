@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.Tilemaps;
 using TMPro;
 
@@ -40,7 +41,8 @@ public class WorldRenderer : MonoBehaviour
         if (instance.gameTilemap == null)
         {
             GameObject tilemapObject = Instantiate(instance.tileMapPrefab);
-            instance.gameTilemap = tilemapObject.GetComponentInChildren<Tilemap>();
+			SceneManager.MoveGameObjectToScene(tilemapObject, SceneManager.GetSceneByBuildIndex(1));
+			instance.gameTilemap = tilemapObject.GetComponentInChildren<Tilemap>();
             if (instance.gameTilemap == null)
             {
                 throw new UnityException("No tilemap found!");
@@ -64,6 +66,7 @@ public class WorldRenderer : MonoBehaviour
 			else
 			{
 				GameObject textObj = GameObject.Instantiate(instance.armyTextPrefab, textPos, Quaternion.identity);
+				SceneManager.MoveGameObjectToScene(textObj, SceneManager.GetSceneByBuildIndex(1));
 				armyText = textObj.GetComponentInChildren<TextMeshProUGUI>();
 				instance.armyTexts.Add(textPos, armyText);
 			}
@@ -74,6 +77,7 @@ public class WorldRenderer : MonoBehaviour
 			else
 			{
 				GameObject textObj = GameObject.Instantiate(instance.expendedArmyTextPrefab, expendedTextPos, Quaternion.identity);
+				SceneManager.MoveGameObjectToScene(textObj, SceneManager.GetSceneByBuildIndex(1));
 				expendedArmyText = textObj.GetComponentInChildren<TextMeshProUGUI>();
 				instance.expendedArmyTexts.Add(textPos, expendedArmyText);
 			}

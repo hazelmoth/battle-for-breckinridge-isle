@@ -16,14 +16,13 @@ public class TurnHandler : MonoBehaviour
 		currentPlayerIndex = 0;
 
 		NeuralNetwork nn = new NeuralNetwork(2, 2, new int[] { 2, 2 });
-		Debug.Log(nn.Calculate(new float[] { 1f, 2f })[0]);
     }
 
 	public static int CurrentTurn => instance.currentTurn;
 
 	public static Player GetCurrentPlayer ()
 	{
-		return GameController.instance.players[instance.currentPlayerIndex];
+		return GameController.instance.remainingPlayers[instance.currentPlayerIndex];
 	}
 	
 	public static void ProgressTurn()
@@ -35,7 +34,7 @@ public class TurnHandler : MonoBehaviour
 			return;
 
 		instance.currentPlayerIndex++;
-		if (instance.currentPlayerIndex >= GameController.instance.players.Count)
+		if (instance.currentPlayerIndex >= GameController.instance.remainingPlayers.Count)
 			instance.currentPlayerIndex = 0;
 		instance.currentTurn++;
 

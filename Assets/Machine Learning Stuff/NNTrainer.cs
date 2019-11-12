@@ -29,6 +29,7 @@ using UnityEngine.SceneManagement;
 public static class NNTrainer
 {
 	const int HIDDEN_LAYER_COUNT = 12;
+	const int MAX_TURN_COUNT = 1000;
 	const int MAIN_SCENE_INDEX = 1;
 	const float WEIGHT_INIT_MIN = -1f;
 	const float WEIGHT_INIT_MAX = 1f;
@@ -135,6 +136,15 @@ public static class NNTrainer
 				// Play through a game for every two models
 				while (GameController.instance.gameEnded == false)
 				{
+					Debug.Log(TurnHandler.CurrentTurn);
+					if (TurnHandler.CurrentTurn > MAX_TURN_COUNT)
+					{
+						Debug.Log("Turn limit reached.");
+						// Hit max turn count; end the game
+						GameController.instance.gameEnded = true;
+						break;
+					}
+
 					// Set weights depending on whose turn it is
 					if (TurnHandler.CurrentTurn % 2 == 1) // Turn is odd (turns start on 1)
 					{
@@ -153,36 +163,9 @@ public static class NNTrainer
 
 					while (true) // Repeat until turn end
 					{
-						// If this model is facing the same input that it was last time it had a turn,
-						// make skipping the turn undesirable
-						if (TurnHandler.CurrentTurn % 2 == 1)
-						{
-							if (Enumerable.SequenceEqual(model1LastInput, input))
-							{
-								output[0] -= 1000;
-								Debug.Log("input is same as last time");
-							}
-							else
-							{
-								model1LastInput = input;
-							}
-						}
-						else
-						{
-							if (Enumerable.SequenceEqual(model2LastInput, input))
-							{
-								output[0] -= 1000;
-								Debug.Log("input is same as last time");
-							}
-							else
-							{
-								model2LastInput = input;
-							}
-						}
-
 
 						// Find best starting tile
-						int bestStart = 1;
+						int bestStart = 0;
 
 						for (int i = 0; i < GameController.WORLD_X * GameController.WORLD_Y; i++)
 						{
@@ -193,10 +176,10 @@ public static class NNTrainer
 							GameTile tile = GameController.instance.gameMap[new Vector2Int(x, y)];
 							if (tile.owner != TurnHandler.GetCurrentPlayer() || (!InputHandler.instance.placingArmies && tile.armies == tile.expendedArmies))
 							{
-								output[i + 1] = -1000;
+								output[i + 1] -= 1000;
 							}
 
-							if (output[i + 1] > output[bestStart])
+							if (output[i + 1] > output[bestStart + 1])
 							{
 								bestStart = i;
 							}
@@ -204,7 +187,7 @@ public static class NNTrainer
 
 						// Find best target tile
 						int offset = 1 + GameController.WORLD_X * GameController.WORLD_Y;
-						int bestTarget = offset;
+						int bestTarget = 0;
 
 						for (int i = 0; i < GameController.WORLD_X * GameController.WORLD_Y; i++)
 						{
@@ -223,14 +206,12 @@ public static class NNTrainer
 							}
 							if (!nextToStartTile)
 							{
-								output[i + offset] = -1000;
+								output[i + offset] -= 1000;
 							}
 
-							if (output[i + offset] > output[bestTarget])
+							if (output[i + offset] > output[bestTarget + offset])
 							{
 								bestTarget = i;
-								if (nextToStartTile)
-									Debug.Log("best move is next to start");
 							}
 						}
 
@@ -238,7 +219,7 @@ public static class NNTrainer
 						{
 							// Agent decided end turn is best move
 							InputHandler.instance.OnEndTurnButton();
-							yield return null;
+							break;
 						}
 						else
 						{
@@ -248,18 +229,20 @@ public static class NNTrainer
 							int targetY = bestTarget / GameController.WORLD_X;
 							int targetX = bestTarget % GameController.WORLD_X;
 
-							Debug.Log(startX + ", " + startY + " to " + targetX + ", " + targetY);
+							InputHandler.instance.ClearTileSelection();
 
 							InputHandler.instance.RegisterClickOnTile(new Vector2Int(startX, startY));
 							yield return null;
 
 							if (!InputHandler.instance.placingArmies) // Only input the second move if we're not placing armies
 							{
-								Debug.Log("Target selected");
 								InputHandler.instance.RegisterClickOnTile(new Vector2Int(targetX, targetY));
 								yield return null;
 							}
 						}
+
+						if (GameController.instance.gameEnded)
+							break;
 
 						input = GatherInputs();
 						if (!Enumerable.SequenceEqual(input, GatherInputs()))
@@ -270,7 +253,26 @@ public static class NNTrainer
 						}
 						output = nn.Calculate(input);
 					}
-					
+				}
+				// The game is over.
+				// Evaluate which player won:
+				if (ScorePosition(GameController.instance.startingPlayers[0]) > ScorePosition(GameController.instance.startingPlayers[1]))
+				{
+					Debug.Log("Win goes to " + GameController.instance.startingPlayers[0].nationName);
+					wins[model] = true;
+					wins[model + 1] = false;
+				}
+				else if (ScorePosition(GameController.instance.startingPlayers[0]) < ScorePosition(GameController.instance.startingPlayers[1]))
+				{
+					Debug.Log("Win goes to " + GameController.instance.startingPlayers[1].nationName);
+					wins[model] = false;
+					wins[model + 1] = true;
+				}
+				else
+				{
+					Debug.Log("A perfect draw.");
+					wins[model] = false;
+					wins[model + 1] = false;
 				}
 			}
 		}
@@ -336,6 +338,22 @@ public static class NNTrainer
 		return inputs;
 	}
 
+	static float ScorePosition (Player player)
+	{
+		const float ARMY_PRODUCTION_MULT = 5f;
+
+		Dictionary<Vector2Int, GameTile> gameMap = GameController.instance.gameMap;
+		float total = 0;
+		foreach (Vector2Int pos in gameMap.Keys)
+		{
+			if (gameMap[pos].owner == player)
+			{
+				total += gameMap[pos].armies;
+				total += gameMap[pos].type.armyProduction * ARMY_PRODUCTION_MULT;
+			}
+		}
+		return total;
+	}
 
 }
 

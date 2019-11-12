@@ -15,7 +15,8 @@ public class GameController : MonoBehaviour
 	public event GameControllerEvent OnSetupComplete;
 
     public Dictionary<Vector2Int, GameTile> gameMap;
-	public List<Player> players;
+	public List<Player> startingPlayers;
+	public List<Player> remainingPlayers;
 
 	public bool setupHasFinished = false;
 	public bool gameEnded;
@@ -50,8 +51,9 @@ public class GameController : MonoBehaviour
 		player2.color = Color.red;
 		player2.nationName = "The Confederacy";
 
-		players = new List<Player> { player1, player2 };
-		PlayerSpawner.SpawnPlayers(players, 4);
+		startingPlayers = new List<Player> { player1, player2 };
+		remainingPlayers = startingPlayers;
+		PlayerSpawner.SpawnPlayers(remainingPlayers, 4);
 
 		UpdateWorldRender();
 
@@ -94,23 +96,22 @@ public class GameController : MonoBehaviour
 			}
 				
 		}
-		for (int i = players.Count - 1; i >= 0; i--)
+		for (int i = remainingPlayers.Count - 1; i >= 0; i--)
 		{
-			Player player = players[i];
+			Player player = remainingPlayers[i];
 			if (!playersWithTerritory.Contains(player))
 			{
-				players.Remove(player);
+				remainingPlayers.Remove(player);
 			}
 		}
-		if(players.Count <= 1)
+		if(remainingPlayers.Count <= 1)
 		{
-			VictoryScreenManager.LaunchVictoryScreen(players[0]);
+			VictoryScreenManager.LaunchVictoryScreen(remainingPlayers[0]);
 			gameEnded = true;
 		}
 	}
 	public void LaunchAttack(Vector2Int startTilePos, Vector2Int endTilePos)
 	{
-		Debug.Log("Attack launched!");
 		GameTile startTile = gameMap[startTilePos];
 		GameTile endTile = gameMap[endTilePos];
 
