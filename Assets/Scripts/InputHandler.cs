@@ -109,13 +109,13 @@ public class InputHandler : MonoBehaviour
 					{
 						// Both tiles are the current player's
 						// Perform troop movement
-						GameController.instance.MoveArmies(new Vector2Int(_firstSelectedTile.x, _firstSelectedTile.y), new Vector2Int(_secondSelectedTile.x, _secondSelectedTile.y));
+						GameController.instance.MoveArmy(new Vector2Int(_firstSelectedTile.x, _firstSelectedTile.y), new Vector2Int(_secondSelectedTile.x, _secondSelectedTile.y));
 
 					}
 					else if (GameController.instance.GetTile(new Vector2Int(_secondSelectedTile.x, _secondSelectedTile.y)).armies == 0)
 					{
 						// Move into empty territory
-						GameController.instance.MoveArmies(new Vector2Int(_firstSelectedTile.x, _firstSelectedTile.y), new Vector2Int(_secondSelectedTile.x, _secondSelectedTile.y));
+						GameController.instance.MoveArmy(new Vector2Int(_firstSelectedTile.x, _firstSelectedTile.y), new Vector2Int(_secondSelectedTile.x, _secondSelectedTile.y));
 
 					}
 					else

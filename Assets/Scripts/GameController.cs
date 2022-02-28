@@ -6,9 +6,9 @@ public class GameController : MonoBehaviour
 {
 	public static GameController instance;
 
-	public const int WorldX = 14;
-	public const int WorldY = 8;
-	public const int BaseArmiesPerTurn = 1;
+	public const int WorldX = 20;
+	public const int WorldY = 12;
+	private const int BaseArmiesPerTurn = 1;
 
 	public delegate void GameControllerEvent();
 	public event GameControllerEvent OnSetupComplete;
@@ -29,9 +29,11 @@ public class GameController : MonoBehaviour
 		// Make up some players to spawn
 		Player player1 = new HumanPlayer("The Union", Color.blue);
 
-		Player player2 = new BasicAIPlayer("The Confederacy", Color.red);
+		Player player2 = new BasicAIPlayer("The Confederacy", Color.red, 1.5f);
 
-		startingPlayers = new List<Player> { player1, player2 };
+		Player player3 = new BasicAIPlayer("Germany", new Color(240, 195, 0), 1.5f);
+
+		startingPlayers = new List<Player> { player1, player2, player3 };
 
 		WorldMapGenerator.StartGeneration(WorldX, WorldY, UnityEngine.Random.value * 1000, this.startingPlayers.Count, OnGenFinished, this);
 	}
@@ -132,7 +134,7 @@ public class GameController : MonoBehaviour
 		UpdateWorldRender();
 	}
 
-	public void MoveArmies(Vector2Int startTilePos, Vector2Int endTilePos)
+	public void MoveArmy(Vector2Int startTilePos, Vector2Int endTilePos)
 	{
 		GameTile startTile = gameMap[startTilePos];
 		GameTile endTile = gameMap[endTilePos];
@@ -179,6 +181,8 @@ public class GameController : MonoBehaviour
 			if (gameTile.owner == player)
 				armies += gameTile.type.armyProduction;
 		}
+
+		armies *= player.ArmyProductionMultiplier;
 		player.ArmiesToPlace = Mathf.FloorToInt(armies);
 	}
 	public void ResetAllExpendedArmies ()

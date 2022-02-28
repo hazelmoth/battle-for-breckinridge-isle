@@ -4,4 +4,6 @@
 	public Player owner;
 	public int armies;
 	public int expendedArmies;
+
+	public int AvailableArmies => armies - expendedArmies;
 }

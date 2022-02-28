@@ -5,11 +5,12 @@ using UnityEngine;
 
 public abstract class Player
 {
-	protected Player(string nationName, Color color, bool allowHumanInput)
+	protected Player(string nationName, Color color, bool allowHumanInput, float armyProductionMultiplier)
 	{
 		NationName = nationName;
 		Color = color;
 		AllowHumanInput = allowHumanInput;
+		ArmyProductionMultiplier = armyProductionMultiplier;
 	}
 
 	public string NationName { get; set; }
@@ -17,6 +18,8 @@ public abstract class Player
 	public Color Color { get; set; }
 
 	public bool AllowHumanInput { get; }
+
+	public float ArmyProductionMultiplier { get; }
 
 	/// How many armies this player currently has available to place
 	public int ArmiesToPlace { get; set; }

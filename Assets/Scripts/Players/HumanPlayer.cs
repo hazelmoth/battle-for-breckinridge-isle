@@ -5,7 +5,7 @@ namespace Players
 {
     public class HumanPlayer : Player
     {
-        public HumanPlayer(string nationName, Color color) : base(nationName, color, true) { }
+        public HumanPlayer(string nationName, Color color) : base(nationName, color, true, 1f) { }
 
         public override void BeginTurn(Action onTurnEnd)
         {
