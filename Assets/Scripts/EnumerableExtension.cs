@@ -23,6 +23,8 @@ public static class EnumerableExtension
             throw new InvalidOperationException("Sequence contains no elements");
 
         float totalWeight = enumerable.Sum(weightSelector);
+        if (totalWeight == 0)
+            throw new InvalidOperationException("Sequence contains no elements with non-zero weight");
         float random = UnityEngine.Random.Range(0, totalWeight);
         foreach (T item in enumerable)
         {

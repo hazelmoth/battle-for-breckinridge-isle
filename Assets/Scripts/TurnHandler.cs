@@ -34,7 +34,7 @@ public class TurnHandler : MonoBehaviour
 			_instance._currentPlayerIndex = 0;
 		_instance.currentTurn++;
 
-		if (_instance.currentTurn > 2)
+		if (_instance.currentTurn > GameController.instance.startingPlayers.Count)
 			GameController.instance.CollectArmies(GetCurrentPlayer());
 
 		if (GetCurrentPlayer().ArmiesToPlace > 0)
