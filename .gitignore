@@ -64,3 +64,5 @@ crashlytics-build.properties
 # macOS files
 *.DS_Store
 
+# ML Training stuff
+Saved Models/

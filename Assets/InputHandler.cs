@@ -40,7 +40,7 @@ public class InputHandler : MonoBehaviour
 
 		if (Input.GetKeyDown(KeyCode.T))
 		{
-			NNTrainer.StartTraining(10, 20);
+			NNTrainer.StartTraining(25);
 		}
 		if (Input.GetKeyDown(KeyCode.Tab))
 		{

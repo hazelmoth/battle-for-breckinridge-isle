@@ -29,18 +29,21 @@ using UnityEngine.SceneManagement;
 public static class NNTrainer
 {
 	const int HIDDEN_LAYER_COUNT = 12;
-	const int MAX_TURN_COUNT = 1000;
+	const int MAX_TURN_COUNT = 400;
 	const int MAIN_SCENE_INDEX = 1;
 	const float WEIGHT_INIT_MIN = -1f;
 	const float WEIGHT_INIT_MAX = 1f;
 	const float MUTATION_CHANCE = 0.04f;
+	const string SAVE_PATH = @"G:\Projects\Unity Projects\battle-for-breckinridge-isle\Saved Models";
 
-	public static bool DoShowMoves = false;
+	public static bool DoShowMoves = true;
 
+	public static void StartTraining (int modelsPerGen)
+	{
+		StartTraining(1000000, modelsPerGen);
+	}
 	public static void StartTraining (int numGenerations, int modelsPerGen)
 	{
-		//GameObject trainerObject = new GameObject("Trainer Object");
-		//MonoBehaviour trainerBehaviour = trainerObject.AddComponent<MonoBehaviour>();
 		SceneManager.CreateScene("Training_Scene");
 		SceneManager.LoadScene("Training_Scene", LoadSceneMode.Additive);
 
@@ -49,6 +52,34 @@ public static class NNTrainer
 		SceneManager.MoveGameObjectToScene(trainerObject, SceneManager.GetSceneByName("Training_Scene"));
 
 		trainerBehaviour.StartCoroutine(Train(numGenerations, modelsPerGen));
+	}
+
+	// Creates a text file with each model in the given generation as a comma-separated line of ints
+	private static void SaveGen (float[][][][] genWeights, int genNumber)
+	{
+		Debug.Log("Writing generation to file.");
+		using (System.IO.StreamWriter file =
+			new System.IO.StreamWriter(SAVE_PATH + "\\" + genNumber.ToString("D8") + ".txt", false, System.Text.Encoding.UTF8, 65536))
+		{
+			Debug.Log("File created");
+			for (int m = 0; m < genWeights.Length; m++)
+			{
+				System.Text.StringBuilder line = new System.Text.StringBuilder();
+				for (int l = 0; l < genWeights[m].Length; l++)
+				{
+					for (int p = 0; p < genWeights[m][l].Length; p++)
+					{
+						for (int w = 0; w < genWeights[m][l][p].Length; w++)
+						{
+							line.Append(genWeights[m][l][p][w]);
+							line.Append(", ");
+						}
+					}
+				}
+				file.WriteLine(line.ToString());
+			}
+		}
+		Debug.Log("Complete.");
 	}
 
 	static IEnumerator Train (int numGenerations, int modelsPerGen)
@@ -76,9 +107,8 @@ public static class NNTrainer
 
 		NeuralNetwork nn = new NeuralNetwork(inputNodeCount, outputNodeCount, perceptronArray);
 
+		// All the weights of all the models of the current generation
 		float[][][][] genWeights = new float[modelsPerGen][][][];
-
-
 
 		// Randomize weights
 		for (int m = 0; m < modelsPerGen; m++)
@@ -103,6 +133,9 @@ public static class NNTrainer
 		// We'll be testing two models at a time, pitted against each other.
 		for (int gen = 0; gen < numGenerations; gen++)
 		{
+			// Save the current model as a text file
+			SaveGen(genWeights, gen);
+
 			// One bool for each model in the current generation, to track whether it won
 			bool[] wins = new bool[modelsPerGen];
 

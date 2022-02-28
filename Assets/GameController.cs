@@ -7,8 +7,8 @@ public class GameController : MonoBehaviour
 {
 	public static GameController instance;
 
-    public const int WORLD_X = 7;
-    public const int WORLD_Y = 4;
+    public const int WORLD_X = 14;
+    public const int WORLD_Y = 8;
 	public const int BASE_ARMIES_PER_TURN = 1;
 
 	public delegate void GameControllerEvent();
